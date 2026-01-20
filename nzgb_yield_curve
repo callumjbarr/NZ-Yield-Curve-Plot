@@ -1,0 +1,46 @@
+import pandas as pd
+import matplotlib.pyplot as plt
+
+
+# Load the Excel file
+file_path = 'C:/Users/cb241/Downloads/hb2-daily.xlsx'  # Replace with your file path
+
+# Read the Excel file into a DataFrame
+data = pd.read_excel(file_path)
+
+# due to format, drop the first 4 rows
+data = data.iloc[4:]
+# drop columns from 12 onwards
+data = data.drop(columns = data.columns[12:])
+
+#rename columns
+data.columns = ['Date', 'OCR', 'ODR', 'ORRFR', 'OICR', 'Bank Bill 30days',
+                'Bank Bill 60days', 'Bank Bill 90days', '1 year', '2 year', '5 year', '10 year']
+
+# remove hr mins from date
+data['Date'] = pd.to_datetime(data['Date']).dt.strftime('%Y-%m-%d')
+
+# plot curve
+lastDate = -1
+currentrates = data.iloc[lastDate]
+monthAgoRates = data.iloc[lastDate-30] 
+sixmonthAgoRates = data.iloc[lastDate-183]
+
+# x series
+yieldCurveCols = [30/365, 60/365, 90/365, 1, 2, 5, 10]
+x = yieldCurveCols
+numCols = len(yieldCurveCols)
+
+# y series
+currentYields = currentrates[5:numCols+5]
+monthYields = monthAgoRates[5:numCols+5]
+sixmonthAgoYields = sixmonthAgoRates[5:numCols+5]
+
+plt.plot(x, sixmonthAgoYields, marker='o', label='6 months Ago', color='#deebf7', markersize=4)
+plt.plot(x, monthYields, marker='o', label='1 Month Ago', color='#9ecae1', markersize=4)
+plt.plot(x, currentYields, marker='o', label='Today', color='#3182bd', markersize=4)
+plt.xlabel('Maturity')
+plt.ylabel('Rate (%)')
+plt.title(f'Par Yield Curve at {currentrates["Date"]}')
+plt.legend()
+plt.show()
